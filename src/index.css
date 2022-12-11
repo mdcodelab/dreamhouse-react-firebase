@@ -305,6 +305,21 @@ div.profile-obs p:nth-child(2):hover {
     color:  rgba(0, 91, 150, 0.5);
 }
 
+/*listing from Profile*/
+
+.header-listing {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 2rem;
+}
+
+div.listings-container {
+    max-width: 90vw;
+    margin: 0 auto;
+    padding: 2rem;
+    border: 2px solid red;
+}
+
 @media (max-width: 900px) {
     form.profile-form {
         max-width: 100%;
@@ -316,6 +331,7 @@ div.profile-obs p:nth-child(2):hover {
         font-size: 1.3rem;
     }
 }
+
 
 /* -- SPINNER */
 div.spinner {

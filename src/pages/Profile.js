@@ -1,11 +1,12 @@
 import React from 'react';
 import {getAuth, signInWithCustomToken, updateProfile} from "firebase/auth";
 import { Navigate, useNavigate} from 'react-router-dom';
-import { doc, updateDoc, collection, getDocs} from 'firebase/firestore';
+import { doc, updateDoc, collection, getDocs, query, where, orderBy, QueryDocumentSnapshot} from 'firebase/firestore';
 import { db } from '../Firebase';
 import {toast} from "react-toastify";
 import {FcHome} from "react-icons/fc"
 import {Link} from "react-router-dom";
+import ListingItem from "../components/ListingItem";
 
 function Profile() {
   const auth=getAuth();
@@ -19,13 +20,16 @@ function Profile() {
 
   const navigate=useNavigate();
 
+  const[listings, setListings]=React.useState(null);
+  const[loading, setLoading]=React.useState(false);
+
 function onLogout() {
 auth.signOut();
 navigate("/")
 }
 
 //modify name in the input fields
-const [changeDetail, setChangeDetail]=React.useState(false);
+const [changeDetail, setChangeDetail]=React.useState(true);
 
 
 function onChange (e) {
@@ -60,7 +64,31 @@ async function onSubmit() {
   }
 }
 
+//get lists from Firebase
+React.useEffect(() => {
+  async function fetchUserListings() {
+    const listingRef = collection(db, "listings");
+    const q = query(
+      listingRef,
+      where("userRef", "==", auth.currentUser.uid),
+      orderBy("timestamp", "desc")
+    );
+    const querySnap = await getDocs(q);
+    let listings = [];
+    querySnap.forEach((doc) => {
+      return listings.push({
+        id: doc.id,
+        data: doc.data(),
+      });
+    });
+    setListings(listings);
+    setLoading(false);
+  }
+  fetchUserListings();
+}, [auth.currentUser.uid]);
+
   return (
+  <>
     <section className="profile-container">
     <h1 className="header">My Profile</h1>
       <div className="profile-wrapper">
@@ -80,10 +108,26 @@ async function onSubmit() {
         </div>
       </form>
 
-      <button type="submit" className="btn profile-btn"><Link to="create-listing" 
+      <button type="submit" className="btn profile-btn"><Link to="/create-listing" 
       className="link"><FcHome className="icon profile-icon" /> Sell or rent your home</Link></button>
       </div>
     </section>
+
+
+    <div className="listings-container">
+      {!loading && (
+          <>
+            <h2 className="header-listing">My Listing</h2>
+            <ul className="">
+            {listings.map((listing) => (
+              <ListingItem key={listing.id} id={listing.id} listing={listing.data}></ListingItem>
+            ))}
+            </ul>
+          </>
+      )}
+    </div>
+</> 
+    
   );
 }
 
